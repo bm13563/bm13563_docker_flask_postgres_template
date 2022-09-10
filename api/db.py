@@ -1,12 +1,13 @@
-from logging import getLogger
 from os import environ
 from time import sleep
 
 from psycopg2 import connect
 from psycopg2.extras import RealDictCursor
 
+from api.logging import get_logger
 
-logger = getLogger(__name__)
+
+logger = get_logger()
 
 
 class DbManager:
@@ -17,12 +18,14 @@ class DbManager:
         attempts = 0
         while attempts < 5:
             try:
-                return connect(
+                connection = connect(
                     host=environ.get("DB_HOST"),
                     database=environ.get("DB_NAME"),
                     user=environ.get("DB_USER"),
                     password=environ.get("DB_PASSWORD"),
                 )
+                logger.info("connected to database")
+                return connection
             except Exception as e:
                 attempts += 1
                 logger.warn(
