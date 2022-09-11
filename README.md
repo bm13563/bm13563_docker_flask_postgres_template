@@ -2,8 +2,13 @@
 
 This repo is a template containing:
 
-1. A Flask API configured to run in a docker container. This has a db manager and logging configured
-2. A Postgres instance configured to run in a docker container. This has migration tooling configured
+1. A Flask API configured to run in a docker container. This contains
+  a. a database manager
+  b. linting
+  c. logging
+2. A Postgres instance configured to run in a docker container. This contains
+  a. migration tooling
+  b. functionality for setting up test data in a local database
 
 ## Dependencies
 
