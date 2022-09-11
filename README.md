@@ -12,7 +12,7 @@ This repo is a template containing:
 
 ## Dependencies
 
-Theoretically, just docker and python 3. This was developed on Ubuntu 20.04 - no idea how it will behave on other OS. The containers are currently set up with a default name which will need to be changed
+Theoretically only docker and python 3. This was developed on Ubuntu 20.04 - no idea how it will behave on other OS. The containers are currently set up with a default name which will need to be changed
 
 ## Setting up
 
