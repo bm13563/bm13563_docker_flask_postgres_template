@@ -1,7 +1,7 @@
 from flask import Flask
 from dotenv import load_dotenv
 
-from api.logging import get_logger
+from common.logging import get_logger
 from api.db import DbManager
 
 
@@ -13,3 +13,8 @@ app = Flask(__name__)
 logger.info("starting application")
 
 db = DbManager()
+
+
+@app.route("/ping", methods=["GET"])
+def ping():
+    return "pong"

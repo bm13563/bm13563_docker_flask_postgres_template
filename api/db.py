@@ -4,14 +4,24 @@ from time import sleep
 from psycopg2 import connect
 from psycopg2.extras import RealDictCursor
 
-from api.logging import get_logger
+from common.logging import get_logger
 
 
 logger = get_logger()
 
 
 class DbManager:
-    def __init__(self):
+    def __init__(
+        self,
+        host=environ.get("DB_HOST"),
+        database=environ.get("DB_NAME"),
+        user=environ.get("DB_USER"),
+        password=environ.get("DB_PASSWORD"),
+    ):
+        self.host = host
+        self.database = database
+        self.user = user
+        self.password = password
         self.db = self.connect()
 
     def connect(self):
@@ -19,12 +29,19 @@ class DbManager:
         while attempts < 5:
             try:
                 connection = connect(
-                    host=environ.get("DB_HOST"),
-                    database=environ.get("DB_NAME"),
-                    user=environ.get("DB_USER"),
-                    password=environ.get("DB_PASSWORD"),
+                    host=self.host,
+                    database=self.database,
+                    user=self.user,
+                    password=self.password,
                 )
-                logger.info("connected to database")
+                logger.info(
+                    "connected to db",
+                    extra={
+                        "host": environ.get("DB_HOST"),
+                        "database": environ.get("DB_NAME"),
+                        "user": environ.get("DB_USER"),
+                    },
+                )
                 return connection
             except Exception as e:
                 attempts += 1
