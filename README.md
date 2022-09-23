@@ -6,8 +6,9 @@ This repo is a template containing:
   - a database manager
   - linting
   - logging
+  - authentication via JWT
 - A Postgres instance configured to run in a docker container. This contains
-  - migration tooling
+  - migration tooling (ish)
   - functionality for setting up test data in a local database
 
 ## Dependencies
