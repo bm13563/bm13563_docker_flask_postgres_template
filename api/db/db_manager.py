@@ -8,15 +8,14 @@ from common.logging import get_logger
 
 
 logger = get_logger()
-register_uuid()
 
 
 class DbManager:
     def __init__(self):
-        self.db = None
-        logger.warning("database instantiated... remember to connect!")
+        register_uuid()
+        self.db = self._connect()
 
-    def connect(self):
+    def _connect(self):
         attempts = 0
         while attempts < 5:
             try:
@@ -85,9 +84,9 @@ class DbManager:
     def fetch(self, query, params=None):
         cursor = self.db.cursor(cursor_factory=RealDictCursor)
         self._execute(cursor, query, params)
-        return dict(cursor.fetchall())
+        return cursor.fetchall()
 
     def fetch_one(self, query, params=None):
         cursor = self.db.cursor(cursor_factory=RealDictCursor)
         self._execute(cursor, query, params)
-        return dict(cursor.fetchone())
+        return cursor.fetchone()

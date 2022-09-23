@@ -41,9 +41,9 @@ def _apply_migration(sorted_sql_files: dict):
         )
     """
     )
-    migrations_exist = result_set.get("exists")
+    migrations_exist = result_set.get("exists") or False
 
-    if migrations_exist is not None:
+    if migrations_exist:
         migrations = dbm.fetch_one(
             """
                 select max(version)
