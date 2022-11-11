@@ -12,7 +12,6 @@ logger = get_logger()
 
 
 app = Flask(__name__)
-dbm = DbManager()
 logger.info("starting application")
 
 app.register_blueprint(auth)

@@ -10,6 +10,7 @@ COPY requirements.txt project/requirements.txt
 COPY setup.py project/setup.py
 COPY common/ project/common/
 COPY settings/${ENVIRONMENT}.cfg project/settings/env.cfg
+COPY db.sh project/db.sh
 
 WORKDIR project
 

@@ -28,6 +28,7 @@ services:
             - LETSENCRYPT_HOST=${LETSENCRYPT_HOST}
         volumes:
             - ${PWD}/api:/project/api
+            - ${PWD}/schema:/project/schema
             - ${PWD}/manifest.sh:/project/manifest.sh
         depends_on:
             docker_postgres:

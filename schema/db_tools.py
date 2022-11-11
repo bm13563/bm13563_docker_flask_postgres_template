@@ -52,6 +52,9 @@ def _apply_migration(sorted_sql_files: dict):
         )
         current_version = migrations[0]
     else:
+        dbm.execute("""
+            create schema migrations;
+        """)
         current_version = 0
 
     for version, filename in sorted_sql_files.items():
