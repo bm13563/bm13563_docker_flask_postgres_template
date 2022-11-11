@@ -24,13 +24,13 @@ class DbManager:
                     extra={
                         "host": environ.get("DB_HOST"),
                         "database": environ.get("DB_DATABASE"),
-                        "user": environ.get("DB_USER"),
+                        "user": environ.get("DB_USERNAME"),
                     },
                 )
                 connection = connect(
                     host=environ.get("DB_HOST"),
                     database=environ.get("DB_DATABASE"),
-                    user=environ.get("DB_USER"),
+                    user=environ.get("DB_USERNAME"),
                     password=environ.get("DB_PASSWORD"),
                 )
                 self.db = connection
@@ -39,7 +39,7 @@ class DbManager:
                     extra={
                         "host": environ.get("DB_HOST"),
                         "database": environ.get("DB_DATABASE"),
-                        "user": environ.get("DB_USER"),
+                        "user": environ.get("DB_USERNAME"),
                     },
                 )
                 return connection

@@ -1,8 +1,6 @@
 from os import getcwd
 
 from flask import Flask
-from dotenv import load_dotenv
-load_dotenv(str(getcwd()) + "/dev.env")
 
 from common.logging import get_logger
 from api.db.db_manager import DbManager

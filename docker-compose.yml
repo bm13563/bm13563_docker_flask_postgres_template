@@ -1,0 +1,75 @@
+version: '2.1'
+services:
+    docker_postgres:
+        container_name: docker_postgres
+        image: postgres
+        ports:
+            - '5432:5432'
+        network_mode: bridge
+        environment:
+            - "POSTGRES_USER=${DB_USERNAME}"
+            - "POSTGRES_PASSWORD=${DB_PASSWORD}"
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U postgres"]
+            interval: 1s
+            timeout: 1s
+            retries: 60
+
+    docker_service:
+        container_name: docker_service
+        image: 'docker_service:latest'
+        ports:
+            - '5000:5000'
+        links:
+            - docker_postgres
+        network_mode: bridge
+        environment:
+            - VIRTUAL_HOST=${NGINX_HOST}
+            - LETSENCRYPT_HOST=${LETSENCRYPT_HOST}
+        volumes:
+            - ${PWD}/api:/project/api
+            - ${PWD}/manifest.sh:/project/manifest.sh
+        depends_on:
+            docker_postgres:
+                condition: service_healthy
+
+    nginx-proxy:
+        container_name: nginx-proxy
+        image: nginxproxy/nginx-proxy
+        restart: unless-stopped
+        ports:
+            - "80:80"
+            - "443:443"
+        volumes:
+            - conf:/etc/nginx/conf.d/nginx_config.conf
+            - vhost:/etc/nginx/vhost.d
+            - html:/usr/share/nginx/html
+            - certs:/etc/nginx/certs:ro
+            - /var/run/docker.sock:/tmp/docker.sock:ro
+        network_mode: bridge
+
+    acme-companion:
+        container_name: nginx-proxy-acme
+        image: nginxproxy/acme-companion
+        restart: unless-stopped
+        environment:
+            - DEFAULT_EMAIL=aws@wagestream.com
+        volumes_from:
+            - nginx-proxy
+        volumes:
+            - certs:/etc/nginx/certs:rw
+            - acme:/etc/acme.sh
+            - /var/run/docker.sock:/var/run/docker.sock:ro
+        network_mode: bridge
+
+volumes:
+    conf:
+        name: conf
+    vhost:
+        name: vhost
+    html:
+        name: html
+    certs:
+        name: certs
+    acme:
+        name: acme

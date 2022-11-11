@@ -1,24 +1,23 @@
-# set base image (host OS)
-FROM python:3.9
+FROM python:3.9-slim-bullseye
 
-# set the working directory in the container
-WORKDIR /volley2
+USER root
 
-# copy the dependencies file to the working directory
-COPY requirements.txt .
+RUN groupadd wagestream && useradd -r -g wagestream wagestream
 
-# copy the dependencies file to the working directory
-COPY setup.py .
+ARG ENVIRONMENT
 
-# set up the project to reference modules from the root
+COPY requirements.txt project/requirements.txt
+COPY setup.py project/setup.py
+COPY common/ project/common/
+COPY settings/${ENVIRONMENT}.cfg project/settings/env.cfg
+
+WORKDIR project
+
 RUN pip install -e .
-
-# install dependencies
 RUN pip install -r requirements.txt
 
-# copy the content of the local src directory to the working directory
-COPY api/ api/
-COPY common/ common/
+ENV ENVIRONMENT=${ENVIRONMENT}
 
-# command to run on container start
-CMD flask --app api --debug run
+USER wagestream
+
+CMD bash manifest.sh
