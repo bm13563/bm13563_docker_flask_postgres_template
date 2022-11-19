@@ -1,5 +1,3 @@
-from os import getcwd
-
 from flask import Flask
 
 from common.logging import get_logger

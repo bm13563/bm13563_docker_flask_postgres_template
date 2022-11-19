@@ -12,7 +12,6 @@ case $1 in
             -t docker_service \
             -f Dockerfile \
             --rm \
-            --build-arg ENVIRONMENT=local \
             .
     ;;
     start)
