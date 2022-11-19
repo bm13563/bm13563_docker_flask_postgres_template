@@ -2,27 +2,32 @@
 
 case $1 in
     init)
-        chmod 666 /var/run/docker.sock
+        # make sure we have permissions to run the script
+        sudo chmod 666 /var/run/docker.sock
+        # stop any local postrgesql instance
+        systemctl stop postgresql
     ;;
     build)
-        case $2 in
-            local)
-                docker build \
-                    -t docker_service \
-                    -f Dockerfile \
-                    --rm \
-                    --build-arg ENVIRONMENT=local \
-                    .
-            ;;
-        esac
+        docker build \
+            -t docker_service \
+            -f Dockerfile \
+            --rm \
+            --build-arg ENVIRONMENT=local \
+            .
     ;;
     start)
-        case $2 in
-            local)
-                source settings/local.cfg
-                docker-compose up docker_service docker_postgres
-            ;;
-        esac
+        source settings/local.cfg
+        docker-compose up -d docker_service docker_postgres
+    ;;
+    postgres)
+        source settings/local.cfg
+        docker-compose up -d docker_postgres
+    ;;
+    reset)
+        docker exec docker_service bash db.sh reset-db
+    ;;
+    logs)
+        docker logs -f docker_service
     ;;
     stop)
         docker stop nginx-proxy

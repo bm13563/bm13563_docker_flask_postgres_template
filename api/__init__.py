@@ -3,7 +3,6 @@ from os import getcwd
 from flask import Flask
 
 from common.logging import get_logger
-from api.db.db_manager import DbManager
 from api.resources.auth import auth
 from api.resources.auth.auth_utils import token_required
 

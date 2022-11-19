@@ -26,9 +26,11 @@ services:
         environment:
             - VIRTUAL_HOST=${NGINX_HOST}
             - LETSENCRYPT_HOST=${LETSENCRYPT_HOST}
+            - GUNICORN_WORKERS=${GUNICORN_WORKERS}
         volumes:
             - ${PWD}/api:/project/api
-            - ${PWD}/schema:/project/schema
+            - ${PWD}/settings:/project/settings
+            - ${PWD}/common:/project/common
             - ${PWD}/manifest.sh:/project/manifest.sh
         depends_on:
             docker_postgres:

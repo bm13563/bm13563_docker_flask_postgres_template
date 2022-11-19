@@ -1,13 +1,16 @@
-from os import environ
 from time import sleep
 
 from psycopg2 import connect
 from psycopg2.extras import RealDictCursor, register_uuid
 
+from api.config import config
 from common.logging import get_logger
 
 
 logger = get_logger()
+
+
+test = config.get("DB_HOST")
 
 
 class DbManager:
@@ -22,24 +25,24 @@ class DbManager:
                 logger.info(
                     "attempting to connect to db",
                     extra={
-                        "host": environ.get("DB_HOST"),
-                        "database": environ.get("DB_DATABASE"),
-                        "user": environ.get("DB_USERNAME"),
+                        "host": config.get("DB_HOST"),
+                        "database": config.get("DB_DATABASE"),
+                        "user": config.get("DB_USERNAME"),
                     },
                 )
                 connection = connect(
-                    host=environ.get("DB_HOST"),
-                    database=environ.get("DB_DATABASE"),
-                    user=environ.get("DB_USERNAME"),
-                    password=environ.get("DB_PASSWORD"),
+                    host=config.get("DB_HOST"),
+                    database=config.get("DB_DATABASE"),
+                    user=config.get("DB_USERNAME"),
+                    password=config.get("DB_PASSWORD"),
                 )
                 self.db = connection
                 logger.info(
                     "connected to db",
                     extra={
-                        "host": environ.get("DB_HOST"),
-                        "database": environ.get("DB_DATABASE"),
-                        "user": environ.get("DB_USERNAME"),
+                        "host": config.get("DB_HOST"),
+                        "database": config.get("DB_DATABASE"),
+                        "user": config.get("DB_USERNAME"),
                     },
                 )
                 return connection

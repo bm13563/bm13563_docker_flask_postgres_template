@@ -32,16 +32,15 @@ def migrate_dev():
 def _apply_migration(sorted_sql_files: dict):
     _get_mutex_lock()
 
-    result_set = dbm.fetch_one(
+    result = dbm.fetch_one(
         """
         select exists (
             select from information_schema.tables
             where table_schema = 'migrations'
-                and table_name = 'migrations'
         )
     """
     )
-    migrations_exist = result_set.get("exists") or False
+    migrations_exist = result.get("exists") or False
 
     if migrations_exist:
         migrations = dbm.fetch_one(
@@ -50,11 +49,8 @@ def _apply_migration(sorted_sql_files: dict):
                 from migrations.migrations
             """
         )
-        current_version = migrations[0]
+        current_version = migrations["max"]
     else:
-        dbm.execute("""
-            create schema migrations;
-        """)
         current_version = 0
 
     for version, filename in sorted_sql_files.items():

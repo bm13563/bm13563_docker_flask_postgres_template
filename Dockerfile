@@ -8,17 +8,18 @@ ARG ENVIRONMENT
 
 COPY requirements.txt project/requirements.txt
 COPY setup.py project/setup.py
-COPY common/ project/common/
-COPY settings/${ENVIRONMENT}.cfg project/settings/env.cfg
 COPY db.sh project/db.sh
+
+COPY /schema project/schema
+RUN chown -R wagestream:wagestream project/schema
 
 WORKDIR project
 
 RUN pip install -e .
 RUN pip install -r requirements.txt
 
-ENV ENVIRONMENT=${ENVIRONMENT}
 
+ENV ENVIRONMENT=${ENVIRONMENT}
 USER wagestream
 
 CMD bash manifest.sh
