@@ -1,11 +1,6 @@
-from os import getcwd
-
 from flask import Flask
-from dotenv import load_dotenv
-load_dotenv(str(getcwd()) + "/dev.env")
 
 from common.logging import get_logger
-from api.db.db_manager import DbManager
 from api.resources.auth import auth
 from api.resources.auth.auth_utils import token_required
 
@@ -14,7 +9,6 @@ logger = get_logger()
 
 
 app = Flask(__name__)
-dbm = DbManager()
 logger.info("starting application")
 
 app.register_blueprint(auth)
