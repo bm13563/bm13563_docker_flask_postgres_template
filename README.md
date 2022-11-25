@@ -2,7 +2,7 @@
 
 A "maximal" Flask-Postgres template, containing:
 
-- A Flask app that can be run in a docker container and under the VSCode debugger
+- A Flask app (including auth and JWT support) that can be run in a docker container and under the VSCode debugger
 - An NGINX reverse proxy with SSL support
 - A Postgres container, that can be accessed using pscyopg2 bindings. No nasty SQLAlchemy
 - Migration facilities
@@ -25,13 +25,14 @@ This will add data to the Postgres db by running all functions in `schema/data/s
 
 ```bash
 curl --location --request POST 'http://127.0.0.1:5000/auth/login' \
---header 'Authorization: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoiNmNmYjA4YWUtMzE4Yy00YzZjLTg1ZDMtODc3ODY0NmNiNjgxIiwiZXhwIjoyMjg2MDk4Nzk4fQ.E2v_wEEsf5dEvCGkiQuIJeKx2OLeNIxMw4lSGMZRpZI' \
 --header 'Content-Type: application/json' \
 --data-raw '{
     "username": "test_username",
     "password": "test_password"
 }'
 ```
+
+This will return a non-expiring JWT that can be used to access protected endpoints.
 
 You can stop the Flask and Postgres services by running `bash ctl.sh stop`. 
 

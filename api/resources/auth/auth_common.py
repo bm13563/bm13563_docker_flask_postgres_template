@@ -6,8 +6,8 @@ from functools import wraps
 from passlib.hash import sha256_crypt
 from flask import request, abort
 
+from api.config import get_config_value
 from api.db import get_dbm
-from api.config import config
 from common.logging import get_logger
 
 
@@ -17,8 +17,8 @@ logger = get_logger()
 def generate_token(user_id):
     try:
         token = encode(
-            {"user_id": user_id, "exp": config.get("JWT_EXPIRATION")},
-            config.get("SECRET_KEY"),
+            {"user_id": user_id, "exp": get_config_value("JWT_EXPIRATION")},
+            get_config_value("SECRET_KEY"),
         )
         logger.info("token generated", extra={"user_id": user_id})
         return token
@@ -37,7 +37,7 @@ def token_required(f):
             abort(401, "token is missing")
 
         try:
-            data = decode(token, config.get("SECRET_KEY"))
+            data = decode(token, get_config_value("SECRET_KEY"))
             current_user = get_user_by_id(data.get("user_id"))
         except Exception as e:
             logger.error("token is invalid", extra={"error": e})
