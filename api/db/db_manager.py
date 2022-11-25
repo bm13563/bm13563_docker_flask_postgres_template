@@ -1,4 +1,3 @@
-from os import environ
 from time import sleep
 
 from psycopg2 import connect
@@ -11,8 +10,9 @@ logger = get_logger()
 
 
 class DbManager:
-    def __init__(self):
+    def __init__(self, config):
         register_uuid()
+        self.config = config
         self.db = self._connect()
 
     def _connect(self):
@@ -22,24 +22,24 @@ class DbManager:
                 logger.info(
                     "attempting to connect to db",
                     extra={
-                        "host": environ.get("DB_HOST"),
-                        "database": environ.get("DB_DATABASE"),
-                        "user": environ.get("DB_USER"),
+                        "host": self.config.get("DB_HOST"),
+                        "database": self.config.get("DB_DATABASE"),
+                        "user": self.config.get("DB_USERNAME"),
                     },
                 )
                 connection = connect(
-                    host=environ.get("DB_HOST"),
-                    database=environ.get("DB_DATABASE"),
-                    user=environ.get("DB_USER"),
-                    password=environ.get("DB_PASSWORD"),
+                    host=self.config.get("DB_HOST"),
+                    database=self.config.get("DB_DATABASE"),
+                    user=self.config.get("DB_USERNAME"),
+                    password=self.config.get("DB_PASSWORD"),
                 )
                 self.db = connection
                 logger.info(
                     "connected to db",
                     extra={
-                        "host": environ.get("DB_HOST"),
-                        "database": environ.get("DB_DATABASE"),
-                        "user": environ.get("DB_USER"),
+                        "host": self.config.get("DB_HOST"),
+                        "database": self.config.get("DB_DATABASE"),
+                        "user": self.config.get("DB_USERNAME"),
                     },
                 )
                 return connection

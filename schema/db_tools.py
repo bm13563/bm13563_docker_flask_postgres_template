@@ -3,13 +3,16 @@ from datetime import datetime
 
 from psycopg2.extras import register_uuid
 
-from api.db import dbm
+from api.config.config import Config
+from api.db.db_manager import DbManager
 from common.logging import get_logger
-from schema.data.add_data import add_data
+from schema.data.setup_data import setup_data
 
 
 logger = get_logger(__name__)
 register_uuid()
+config = Config()
+dbm = DbManager(config)
 
 
 MUTEX_ID = "1625475538359"
@@ -32,16 +35,15 @@ def migrate_dev():
 def _apply_migration(sorted_sql_files: dict):
     _get_mutex_lock()
 
-    result_set = dbm.fetch_one(
+    result = dbm.fetch_one(
         """
         select exists (
             select from information_schema.tables
             where table_schema = 'migrations'
-                and table_name = 'migrations'
         )
     """
     )
-    migrations_exist = result_set.get("exists") or False
+    migrations_exist = result.get("exists") or False
 
     if migrations_exist:
         migrations = dbm.fetch_one(
@@ -50,7 +52,7 @@ def _apply_migration(sorted_sql_files: dict):
                 from migrations.migrations
             """
         )
-        current_version = migrations[0]
+        current_version = migrations["max"]
     else:
         current_version = 0
 
@@ -90,14 +92,7 @@ def _release_mutex_lock():
 
 def create_db():
     migrate_dev()
-    add_data()
-    data_files = listdir(str(getcwd()) + "/schema/data")
-    for f in data_files:
-        if f.endswith(".sql"):
-            with open(str(getcwd()) + "/schema/data/" + f, "r") as sql_file:
-                sql = sql_file.read()
-                dbm.execute(sql)
-                logger.info("ran sql", extra={"file": f, "sql": sql})
+    setup_data()
 
 
 def destroy_db():

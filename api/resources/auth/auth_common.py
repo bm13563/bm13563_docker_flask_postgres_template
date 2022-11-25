@@ -6,7 +6,8 @@ from functools import wraps
 from passlib.hash import sha256_crypt
 from flask import request, abort
 
-from api.db import dbm
+from api.db import get_dbm
+from api.config import config
 from common.logging import get_logger
 
 
@@ -16,8 +17,8 @@ logger = get_logger()
 def generate_token(user_id):
     try:
         token = encode(
-            {"user_id": user_id, "exp": environ.get("JWT_EXPIRATION")},
-            environ.get("SECRET_KEY"),
+            {"user_id": user_id, "exp": config.get("JWT_EXPIRATION")},
+            config.get("SECRET_KEY"),
         )
         logger.info("token generated", extra={"user_id": user_id})
         return token
@@ -36,7 +37,7 @@ def token_required(f):
             abort(401, "token is missing")
 
         try:
-            data = decode(token, environ.get("SECRET_KEY"))
+            data = decode(token, config.get("SECRET_KEY"))
             current_user = get_user_by_id(data.get("user_id"))
         except Exception as e:
             logger.error("token is invalid", extra={"error": e})
@@ -49,6 +50,7 @@ def token_required(f):
 
 def get_user_by_id(user_id):
     logger.info("getting user by id", extra={"user_id": user_id})
+    dbm = get_dbm()
     return dbm.fetch_one(
         """
         select *
@@ -61,6 +63,7 @@ def get_user_by_id(user_id):
 
 def get_user_by_username(username):
     logger.info("getting user by username", extra={"username": username})
+    dbm = get_dbm()
     return dbm.fetch_one(
         """
         select *
