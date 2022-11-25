@@ -15,4 +15,3 @@ def create_app():
     logger.info("registered auth blueprint")
 
     return app
-    
