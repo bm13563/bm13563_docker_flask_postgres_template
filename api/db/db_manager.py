@@ -3,19 +3,16 @@ from time import sleep
 from psycopg2 import connect
 from psycopg2.extras import RealDictCursor, register_uuid
 
-from api.config import config
 from common.logging import get_logger
 
 
 logger = get_logger()
 
 
-test = config.get("DB_HOST")
-
-
 class DbManager:
-    def __init__(self):
+    def __init__(self, config):
         register_uuid()
+        self.config = config
         self.db = self._connect()
 
     def _connect(self):
@@ -25,24 +22,24 @@ class DbManager:
                 logger.info(
                     "attempting to connect to db",
                     extra={
-                        "host": config.get("DB_HOST"),
-                        "database": config.get("DB_DATABASE"),
-                        "user": config.get("DB_USERNAME"),
+                        "host": self.config.get("DB_HOST"),
+                        "database": self.config.get("DB_DATABASE"),
+                        "user": self.config.get("DB_USERNAME"),
                     },
                 )
                 connection = connect(
-                    host=config.get("DB_HOST"),
-                    database=config.get("DB_DATABASE"),
-                    user=config.get("DB_USERNAME"),
-                    password=config.get("DB_PASSWORD"),
+                    host=self.config.get("DB_HOST"),
+                    database=self.config.get("DB_DATABASE"),
+                    user=self.config.get("DB_USERNAME"),
+                    password=self.config.get("DB_PASSWORD"),
                 )
                 self.db = connection
                 logger.info(
                     "connected to db",
                     extra={
-                        "host": config.get("DB_HOST"),
-                        "database": config.get("DB_DATABASE"),
-                        "user": config.get("DB_USERNAME"),
+                        "host": self.config.get("DB_HOST"),
+                        "database": self.config.get("DB_DATABASE"),
+                        "user": self.config.get("DB_USERNAME"),
                     },
                 )
                 return connection

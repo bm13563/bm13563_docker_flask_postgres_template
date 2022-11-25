@@ -25,6 +25,10 @@ case $1 in
     reset)
         docker exec docker_service bash db.sh reset-db
     ;;
+    reset-local)
+        export DB_HOST=localhost
+        bash db.sh reset-db
+    ;;
     logs)
         docker logs -f docker_service
     ;;

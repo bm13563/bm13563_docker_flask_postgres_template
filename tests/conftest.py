@@ -1,10 +1,15 @@
 from os import environ
 
+import pytest
+
+from api.app import create_app
+
 
 def pytest_configure(config):
-    """
-    Allows plugins and conftest files to perform initial configuration.
-    This hook is called for every plugin and initial conftest
-    file after command line options have been parsed.
-    """
     environ["DB_HOST"] = "localhost"
+
+
+@pytest.fixture()
+def app():
+    app = create_app()
+    yield app
