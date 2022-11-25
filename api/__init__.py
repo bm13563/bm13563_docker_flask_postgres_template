@@ -1,18 +1,8 @@
-from flask import Flask
-
-from common.logging import get_logger
-from api.resources.auth import auth
-from api.resources.auth.auth_utils import token_required
+from api.app import create_app
+from api.resources.auth.auth_common import token_required
 
 
-logger = get_logger()
-
-
-app = Flask(__name__)
-logger.info("starting application")
-
-app.register_blueprint(auth)
-logger.info("registered auth blueprint")
+app = create_app()
 
 
 @app.route("/ping", methods=["GET"])

@@ -1,8 +1,8 @@
 from os import abort
 from passlib.hash import sha256_crypt
 
-from api.db import dbm
-from api.resources.auth.auth_utils import password_matches, generate_token
+from api.db import get_dbm
+from api.resources.auth.auth_common import password_matches, generate_token
 from common.logging import get_logger
 
 
@@ -11,6 +11,7 @@ logger = get_logger()
 
 def register_controller(username, password):
     encrypted_password = sha256_crypt.encrypt(password)
+    dbm = get_dbm()
     try:
         dbm.execute(
             """

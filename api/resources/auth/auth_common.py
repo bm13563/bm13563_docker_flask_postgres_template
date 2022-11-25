@@ -6,7 +6,7 @@ from functools import wraps
 from passlib.hash import sha256_crypt
 from flask import request, abort
 
-from api.db import dbm
+from api.db import get_dbm
 from api.config import config
 from common.logging import get_logger
 
@@ -50,6 +50,7 @@ def token_required(f):
 
 def get_user_by_id(user_id):
     logger.info("getting user by id", extra={"user_id": user_id})
+    dbm = get_dbm()
     return dbm.fetch_one(
         """
         select *
@@ -62,6 +63,7 @@ def get_user_by_id(user_id):
 
 def get_user_by_username(username):
     logger.info("getting user by username", extra={"username": username})
+    dbm = get_dbm()
     return dbm.fetch_one(
         """
         select *

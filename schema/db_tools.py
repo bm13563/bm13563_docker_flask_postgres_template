@@ -3,13 +3,14 @@ from datetime import datetime
 
 from psycopg2.extras import register_uuid
 
-from api.db import dbm
+from api.db.db_manager import DbManager
 from common.logging import get_logger
-from schema.data.add_data import add_data
+from schema.data.setup_data import setup_data
 
 
 logger = get_logger(__name__)
 register_uuid()
+dbm = DbManager()
 
 
 MUTEX_ID = "1625475538359"
@@ -89,7 +90,7 @@ def _release_mutex_lock():
 
 def create_db():
     migrate_dev()
-    add_data()
+    setup_data()
     data_files = listdir(str(getcwd()) + "/schema/data")
     for f in data_files:
         if f.endswith(".sql"):

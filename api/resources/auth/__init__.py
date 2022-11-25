@@ -14,12 +14,12 @@ auth = Blueprint("auth", __name__, url_prefix="/auth")
 def register():
     request_data = request.get_json()
     username = request_data.get("username", False)
-    hashed_password = request_data.get("password", False)
+    password = request_data.get("password", False)
 
-    if not username or not hashed_password:
+    if not username or not password:
         abort(400, "username and password are required")
 
-    register_controller()
+    register_controller(username, password)
 
     return jsonify({"status_code": 200, "message": "user registered", "data": {}})
 
