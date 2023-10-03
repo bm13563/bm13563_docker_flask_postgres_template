@@ -1,18 +1,20 @@
-from os import getcwd, listdir, path, mknod, getcwd
+from subprocess import run
+from os import getcwd, listdir, path, mknod, getcwd, remove
 from datetime import datetime
+import tarfile
 
 from psycopg2.extras import register_uuid
 
-from api.config.config import Config
-from api.db.db_manager import DbManager
+from common.config import Config
+from common.db_manager import get_global_dbm
 from common.logging import get_logger
-from schema.data.setup_data import setup_data
+from schema.protected_tables import PROTECTED_TABLES
 
 
 logger = get_logger(__name__)
 register_uuid()
 config = Config()
-dbm = DbManager(config)
+dbm = get_global_dbm(config)
 
 
 MUTEX_ID = "1625475538359"
@@ -23,6 +25,7 @@ def migrate():
 
 
 def migrate_dev():
+    logger.info("migrating dev")
     try:
         sorted_sql_files = get_sorted_sql_files()
         _apply_migration(sorted_sql_files)
@@ -33,6 +36,7 @@ def migrate_dev():
 
 
 def _apply_migration(sorted_sql_files: dict):
+    logger.info("applying migration")
     _get_mutex_lock()
 
     result = dbm.fetch_one(
@@ -77,6 +81,7 @@ def _apply_migration(sorted_sql_files: dict):
 
 
 def _get_mutex_lock():
+    logger.info("getting mutex lock")
     lock = dbm.fetch_one(
         "select pg_advisory_lock(%(mutex_id)s);", {"mutex_id": MUTEX_ID}
     )
@@ -86,16 +91,19 @@ def _get_mutex_lock():
 
 
 def _release_mutex_lock():
+    logger.info("releasing mutex lock")
     dbm.execute("select pg_advisory_unlock(%(mutex_id)s);", {"mutex_id": MUTEX_ID})
     logger.info("released mutex lock", extra={"mutex_id": MUTEX_ID})
 
 
 def create_db():
+    logger.info("creating db")
     migrate_dev()
-    setup_data()
+    restore_db()
 
 
 def destroy_db():
+    logger.info("destroying db")
     dbm.execute("drop schema if exists public cascade;")
     dbm.execute("create schema public;")
     dbm.execute("drop schema if exists migrations cascade;")
@@ -104,6 +112,7 @@ def destroy_db():
 
 
 def get_sorted_sql_files() -> dict:
+    logger.info("getting sorted sql files")
     sql_files = listdir(str(getcwd()) + "/schema/migrations")
     sql_files_to_sort = {}
     for f in sql_files:
@@ -114,6 +123,7 @@ def get_sorted_sql_files() -> dict:
 
 
 def create_migration(name):
+    logger.info("creating migration")
     now = datetime.now().strftime("%Y%m%d%H%M%S")
     filename = f"{now}_{name}.sql"
     filepath = f"schema/migrations/{filename}"
@@ -122,3 +132,71 @@ def create_migration(name):
 
     with open(filepath, "w") as f:
         f.write("begin;\n\n--add sql below here\n\n\ncommit;\n")
+
+
+def dump_db():
+    # delete from all tables except specified
+    all_tables = dbm.fetch(
+        """
+        select *
+        from information_schema.tables
+        where table_schema = 'public'
+    """
+    )
+
+    for table in all_tables:
+        table_name = table["table_name"]
+        if table_name not in PROTECTED_TABLES:
+            logger.debug("deleting table", extra={"table": table})
+            dbm.execute(
+                f"""
+                delete
+                from {table_name}
+            """
+            )
+
+    logger.info("dumping db")
+    filename = f"schema/dumps/{datetime.now().strftime('%Y%m%d%H%M%S')}"
+    run(
+        f"""
+        docker exec -t docker_postgres pg_dump --data-only -U postgres > {filename}.dump
+    """,
+        shell=True,
+    )
+
+    with tarfile.open(f"{filename}.tar.gz", "w:gz") as tar:
+        tar.add(f"{filename}.dump", arcname=path.basename(f"{filename}.dump"))
+
+    remove(f"{filename}.dump")
+
+
+def restore_db():
+    logger.info("restoring db")
+    dump_files = listdir(str(getcwd()) + "/schema/dumps")
+
+    dump_files_to_sort = {}
+    for f in dump_files:
+        if f.endswith(".tar.gz"):
+            version = int(f.split(".")[0])
+            dump_files_to_sort[version] = f
+
+    dump_files_sorted = dict(sorted(dump_files_to_sort.items()))
+    if len(dump_files_sorted) == 0:
+        logger.warning("no files to restore")
+        return
+
+    latest_dump = dump_files_sorted[max(dump_files_sorted.keys())]
+
+    with tarfile.open(f"schema/dumps/{latest_dump}", "r:gz") as tar:
+        tar.extractall(path="schema/dumps")
+
+    uncompressed_latest_dump = latest_dump.replace(".tar.gz", ".dump")
+
+    run(
+        f"""
+        docker exec -i docker_postgres psql -U postgres < schema/dumps/{uncompressed_latest_dump};
+    """,
+        shell=True,
+    )
+
+    remove(f"schema/dumps/{uncompressed_latest_dump}")

@@ -1,6 +1,6 @@
 from flask import g
 
-from api.config.config import Config
+from common.config import Config
 
 
 def get_config():
@@ -11,4 +11,3 @@ def get_config():
 
 def get_config_value(name, default=None):
     return get_config().get(name, default)
-    

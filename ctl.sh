@@ -2,47 +2,70 @@
 
 case $1 in
     init)
-        # make sure we have permissions to run the script
-        sudo chmod 666 /var/run/docker.sock
-        # stop any local postrgesql instance
-        systemctl stop postgresql
+        cd "$(dirname "$0")"
+        python3 -m venv .venv
+        source .venv/bin/activate
+        pip install -e .
+        pip install -r requirements.txt
     ;;
     build)
         docker build \
-            -t docker_service \
-            -f Dockerfile \
+            -t docker_api \
+            -f Dockerfile.api \
+            --rm \
+            .
+
+        docker build \
+            -t docker_tasks \
+            -f Dockerfile.tasks \
             --rm \
             .
     ;;
     start)
         source settings/local.cfg
-        docker-compose up -d docker_service docker_postgres
+        docker-compose up -d docker_api docker_postgres docker_tasks docker_rabbitmq
     ;;
     postgres)
         source settings/local.cfg
         docker-compose up -d docker_postgres
     ;;
-    reset)
-        docker exec docker_service bash db.sh reset-db
+    broker)
+        source settings/local.cfg
+        docker-compose up -d docker_rabbitmq
     ;;
-    reset-local)
+    persistance)
+        source settings/local.cfg
+        docker-compose up -d docker_postgres docker_rabbitmq
+    ;;
+    reset)
         export DB_HOST=localhost
         bash db.sh reset-db
-    ;;
-    logs)
-        docker logs -f docker_service
+
+        case $2 in
+            data)
+                python -c"from schema.data.create_test_data import create_test_data; create_test_data()"
+            ;;
+        esac
     ;;
     stop)
         docker stop nginx-proxy
         docker rm nginx-proxy
         docker stop nginx-proxy-acme
         docker rm nginx-proxy-acme
-        docker stop docker_service
-        docker rm docker_service
+        docker stop docker_api
+        docker rm docker_api
+        docker stop docker_tasks
+        docker rm docker_tasks
         docker stop docker_postgres
         docker rm docker_postgres
+        docker stop docker_rabbitmq
+        docker rm docker_rabbitmq
     ;;
     shell)
-        docker run -it --name volley2 --rm --volume "$(pwd)"/api:/volley2/api --net=host --env-file ./dev.env volley2:latest sh
+        # docker run -it --name volley2 --rm --volume "$(pwd)"/api:/volley2/api --net=host --env-file ./dev.env volley2:latest sh
     ;;
-esac
+    create-test-data)
+        export DB_HOST=localhost
+        python -c"from schema.data.create_test_data import create_test_data; create_test_data()"
+    ;;
+esac  

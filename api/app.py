@@ -11,6 +11,7 @@ def create_app():
     logger.info("starting application")
 
     from api.resources.auth import auth
+
     app.register_blueprint(auth)
     logger.info("registered auth blueprint")
 

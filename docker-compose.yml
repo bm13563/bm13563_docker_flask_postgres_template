@@ -14,10 +14,25 @@ services:
             interval: 1s
             timeout: 1s
             retries: 60
+        command: ["postgres", "-c", "log_statement=all"]
 
-    docker_service:
-        container_name: docker_service
-        image: 'docker_service:latest'
+    docker_rabbitmq:
+        container_name: docker_rabbitmq
+        image: rabbitmq:3.7.7-management
+        ports:
+            - '5672:5672'
+            - '15672:15672'
+        network_mode: bridge
+        healthcheck:
+            test: ["CMD-SHELL", "rabbitmqctl status"]
+            interval: 1s
+            timeout: 1s
+            retries: 60
+        command: rabbitmq-server
+
+    docker_api:
+        container_name: docker_api
+        image: 'docker_api:latest'
         ports:
             - '5000:5000'
         links:
@@ -28,12 +43,31 @@ services:
             - LETSENCRYPT_HOST=${LETSENCRYPT_HOST}
             - GUNICORN_WORKERS=${GUNICORN_WORKERS}
         volumes:
-            - ${PWD}/api:/project/api
-            - ${PWD}/settings:/project/settings
-            - ${PWD}/common:/project/common
-            - ${PWD}/manifest.sh:/project/manifest.sh
+            - ${PWD}/api:/api/api
+            - ${PWD}/settings:/api/settings
+            - ${PWD}/common:/api/common
+            - ${PWD}/manifest_api.sh:/api/manifest_api.sh
         depends_on:
             docker_postgres:
+                condition: service_healthy
+
+    docker_tasks:
+        container_name: docker_tasks
+        image: 'docker_tasks:latest'
+        links:
+            - docker_postgres
+            - docker_rabbitmq
+        network_mode: bridge
+        volumes:
+            - ${PWD}/tasks:/tasks/tasks
+            - ${PWD}/scheduler:/tasks/scheduler
+            - ${PWD}/settings:/tasks/settings
+            - ${PWD}/common:/tasks/common
+            - ${PWD}/manifest_tasks.sh:/tasks/manifest_tasks.sh
+        depends_on:
+            docker_postgres:
+                condition: service_healthy
+            docker_rabbitmq:
                 condition: service_healthy
 
     nginx-proxy:

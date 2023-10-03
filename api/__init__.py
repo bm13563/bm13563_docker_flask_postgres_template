@@ -1,7 +1,9 @@
+from flask import abort
+
 from api.app import create_app
 from api.config import get_config
 from api.db import get_dbm
-from api.resources.auth.auth_common import token_required
+from api.utils import Success, token_required, api_error
 
 
 app = create_app()
@@ -11,19 +13,13 @@ with app.app_context():
 
 
 @app.route("/ping", methods=["GET"])
+@api_error("Unable to ping")
 def ping():
-    return {
-        "status_code": 200,
-        "message": "pong",
-        "data": {},
-    }
+    return Success( "pong", {}).to_json()
 
 
 @app.route("/protected_ping", methods=["GET"])
 @token_required
+@api_error("Unable to get ping with authentication")
 def protected_ping():
-    return {
-        "status_code": 200,
-        "message": "protected pong",
-        "data": {},
-    }
+    return Success( "pong", {}).to_json()

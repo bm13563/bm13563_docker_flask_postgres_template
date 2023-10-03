@@ -1,0 +1,17 @@
+FROM python:3.9-slim-bullseye
+
+USER root
+
+RUN groupadd bm13563 && useradd -r -g bm13563 bm13563
+
+COPY requirements.txt api/requirements.txt
+COPY setup.py api/setup.py
+
+WORKDIR api
+
+RUN pip install -e .
+RUN pip install -r requirements.txt
+
+USER bm13563
+
+CMD bash manifest_api.sh

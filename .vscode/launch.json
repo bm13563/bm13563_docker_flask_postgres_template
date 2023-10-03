@@ -7,9 +7,11 @@
             "request": "launch",
             "program": "${file}",
             "justMyCode": true,
-            "console": "integratedTerminal",
+            "console": "internalConsole",
+            "internalConsoleOptions": "neverOpen",
             "env": {
                 "DB_HOST": "localhost",
+                "BROKER_URL": "amqp://127.0.0.1:5672",
             }
         },
         {
@@ -17,8 +19,9 @@
             "type": "python",
             "request": "launch",
             "module": "flask",
-            "justMyCode": true,
-            "console": "integratedTerminal",
+            "justMyCode": false,
+            "console": "internalConsole",
+            "internalConsoleOptions": "neverOpen",
             "env": {
                 "FLASK_APP": "api",
                 "FLASK_DEBUG": "1",
@@ -26,7 +29,21 @@
             },
             "args": [
                 "run"
-            ]
+            ],
+        },
+        {
+            "name": "Run celery",
+            "type": "python",
+            "request": "launch",
+            "module": "celery",
+            "justMyCode": true,
+            "console": "internalConsole",
+            "internalConsoleOptions": "neverOpen",
+            "env": {
+                "BROKER_URL": "amqp://127.0.0.1:5672",
+                "DB_HOST": "localhost"
+            },
+            "args": ["-A", "tasks", "worker", "-l", "info", "--concurrency", "2"]
         }
     ]
 }

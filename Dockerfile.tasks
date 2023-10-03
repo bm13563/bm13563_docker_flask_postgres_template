@@ -1,0 +1,17 @@
+FROM ubuntu:20.04
+
+USER root
+
+RUN groupadd bm13563 && useradd -r -g bm13563 bm13563
+
+COPY requirements.txt tasks/requirements.txt
+COPY setup.py tasks/setup.py
+
+WORKDIR tasks
+
+RUN pip install -e .
+RUN pip install -r requirements.txt
+
+USER bm13563
+
+CMD bash manifest_tasks.sh
