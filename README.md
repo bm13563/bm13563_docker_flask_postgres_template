@@ -5,6 +5,7 @@ A "maximal" Flask-Postgres template, containing:
 - A Flask app (including auth and JWT support) that can be run in a docker container and under the VSCode debugger
 - An NGINX reverse proxy with SSL support
 - A Postgres container, that can be accessed using pscyopg2 bindings. No nasty SQLAlchemy
+- Integrated asynchronous celery tasks with a RabbitMQ broker
 - Migration facilities
 
 The app can be run in two ways - using docker and under the VSCode debugger. The app should behave identically in both environments. It is worth noting that we bypass the NGINX reverse proxy when running in docker or locally - LetsEncrypt requires the endpoint to be publically accessible for SSL to be configured
