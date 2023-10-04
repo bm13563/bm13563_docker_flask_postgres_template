@@ -7,6 +7,8 @@ RUN groupadd bm13563 && useradd -r -g bm13563 bm13563
 COPY requirements.txt tasks/requirements.txt
 COPY setup.py tasks/setup.py
 
+RUN apt-get update && apt-get -y install python3-pip
+
 WORKDIR tasks
 
 RUN pip install -e .
